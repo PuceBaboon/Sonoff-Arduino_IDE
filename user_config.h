@@ -1,5 +1,5 @@
 /*
- * $Id: user_config.h,v 1.2 2016/04/06 05:12:13 anoncvs Exp $
+ * $Id: user_config.h,v 1.4 2016/04/06 14:52:00 anoncvs Exp $
  *
  * Sonoff Arduino implementation by Theo Arends
  */
@@ -10,7 +10,7 @@
  */
 #define PROJECT             "sonoff"
 
-#define VERSION             "1.0.5"
+#define VERSION             "1.0.6"
 #define CFG_HOLDER          0x20160309	// Change this value to load default configurations.
 
 
@@ -20,8 +20,12 @@
 #define WIFI_HOSTNAME       "ESP-%06X-%s"
 
 
-// Ota
-#define OTA_URL             "http://YOUR-HOST.AND.DOMAIN:80/api/arduino/"PROJECT".cpp.bin"
+// OTA
+#if (ARDUINO >= 168)
+  #define OTA_URL             "http://YOUR-HOST.AND.DOMAIN:80/api/arduino/"PROJECT".ino.bin"
+#else
+  #define OTA_URL             "http://YOUR-HOST.AND.DOMAIN:80/api/arduino/"PROJECT".cpp.bin"
+#endif
 
 
 // MQTT

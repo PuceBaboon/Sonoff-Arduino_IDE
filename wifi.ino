@@ -1,5 +1,5 @@
 /*
- * $Id: wifi.ino,v 1.1 2016/04/04 14:45:06 anoncvs Exp $
+ * $Id: wifi.ino,v 1.2 2016/04/06 14:46:56 anoncvs Exp $
  */
 #define CHKSECS   20   // seconds
 
@@ -83,6 +83,7 @@ void WIFI_Connect()
   WiFi.hostname(hostname);
   DEBUG_MSG("APP: Connecting to %s as %s\n", sysCfg.sta_ssid, hostname);
   WiFi.setAutoConnect(true);
+  WiFi.mode(WIFI_STA);
   WiFi.begin(sysCfg.sta_ssid, sysCfg.sta_pwd);
   wificounter = 4;
 }

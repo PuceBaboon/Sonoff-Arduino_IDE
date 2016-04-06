@@ -1,5 +1,5 @@
 /*
- * $Id: rtc.ino,v 1.1 2016/04/04 14:45:06 anoncvs Exp $
+ * $Id: rtc.ino,v 1.2 2016/04/06 14:46:56 anoncvs Exp $
  */
 #define NTP_SERVER1 "pool.ntp.org"
 #define NTP_SERVER2 "nl.pool.ntp.org"
@@ -79,8 +79,8 @@ void rtc_second()
   // NTP Sync every hour at x:0:10
   if (rtcTime.Minute == 0) {
     if ((rtcTime.Second == 10) && !ntpsync) {
-      ntpsync = 1;
-      myrtc = sntp_get_current_timestamp() -1;
+       myrtc = sntp_get_current_timestamp();
+       ntpsync = (myrtc) ? 1 : 0;
       DEBUG_MSG("RTC: sntp %d, %s \n", myrtc, sntp_get_real_time(myrtc));
     }
     if (rtcTime.Second == 40) ntpsync = 0;
