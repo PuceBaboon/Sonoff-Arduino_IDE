@@ -8,10 +8,11 @@ This version simply adds .h files with function prototypes, as well as a minor p
 
 All the mistakes are mine.  All of the brilliant, original work is Theo's.
 
-##Updates..
+###Updates..
 I discovered a minor issue with my version where the "status 1" command would display data to the serial monitor, but would not publish to MQTT.  As a work-around for this, I've reduced the output of "serial 1" (which was very long) and added a couple of other, extra status command options.
-"status 3" now outputs MQTT status, including the updated MQTT_MAX_PACKET_SIZE and MQTT_KEEPALIVE settings.
-"status 4" now outputs the OTA status (which is currently limited to the OTA URL setting).
+- "status 3" now outputs MQTT status, including the updated MQTT_MAX_PACKET_SIZE and MQTT_KEEPALIVE settings.
+- "status 4" now outputs the OTA status (which is currently limited to the OTA URL setting).
+- 
 In addition, the start-up text now also displays the MQTT_MAX_PACKET_SIZE and MQTT_KEEPALIVE in the serial monitor and publishes them to MQTT, too.
 
 ##In brief...
