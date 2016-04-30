@@ -1,5 +1,5 @@
 /*
- * $Id: sonoff.ino,v 1.1 2016/04/04 14:45:06 anoncvs Exp $
+ * $Id: sonoff.ino,v 1.2 2016/04/30 14:52:52 anoncvs Exp $
  *
  * Sonoff Arduino implementation by Theo Arends
  */
@@ -11,11 +11,13 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
-#include <PubSubClient.h>
 
 /*
  * Change the defined MQTT packet size and keepalive
  * to larger values, as recommended by Theo.
+ *
+ * Note that the PubSubClient library should be included
+ * -after- these redefines, not before.
  */
 #ifdef MQTT_MAX_PACKET_SIZE
 	#undef MQTT_MAX_PACKET_SIZE
@@ -25,6 +27,7 @@
 	#undef MQTT_KEEPALIVE
 #endif
 #define MQTT_KEEPALIVE 120
+#include <PubSubClient.h>
 
 struct SYSCFG {
   unsigned long cfg_holder;
@@ -102,7 +105,7 @@ void mqtt_reconnect()
       sprintf_P(svalue, PSTR("%s"), VERSION);
       mqtt_publish(stopic, svalue);
       sprintf_P(stopic, PSTR("%s/%s/FALLBACKTOPIC"), PUB_PREFIX, sysCfg.mqtt_topic);
-      sprintf_P(svalue, PSTR(MQTT_CLIENT_ID), ESP.getChipId());
+      sprintf_P(svalue, PSTR(MQTT_CLIENT_ID" MXPKSZ %d, KPALV %d"), ESP.getChipId(), MQTT_MAX_PACKET_SIZE, MQTT_KEEPALIVE);
       mqtt_publish(stopic, svalue);
     } else {
       DEBUG_MSG("APP MQTT connect failed, rc = %d retry in 5 seconds\n", mqttClient.state());
@@ -160,11 +163,18 @@ void mqttDataCb(char* topic, byte* data, unsigned int data_len)
       sprintf_P(svalue, PSTR("%s, %s, %s, %d, %d"),
         VERSION, sysCfg.mqtt_topic, sysCfg.mqtt_subtopic, sysCfg.power, sysCfg.timezone);
       if ((data_len > 0) && (payload == 1)) {
-        sprintf_P(svalue, PSTR("%s, "MQTT_CLIENT_ID", %s, %s, %s, %s, %d, %d"),
-          sysCfg.mqtt_grptopic, ESP.getChipId(), sysCfg.otaUrl, sysCfg.sta_ssid, sysCfg.sta_pwd, sysCfg.mqtt_host, heartbeat, sysCfg.saveFlag);
+        sprintf_P(svalue, PSTR("NET: %s, "MQTT_CLIENT_ID", %s, %s, %d, %d"),
+          sysCfg.mqtt_grptopic, ESP.getChipId(), sysCfg.sta_ssid, sysCfg.sta_pwd, heartbeat, sysCfg.saveFlag);
+          // sysCfg.mqtt_grptopic, ESP.getChipId(), sysCfg.sta_ssid, sysCfg.sta_pwd, heartbeat, sysCfg.saveFlag);
       }
       if ((data_len > 0) && (payload == 2)) {
-        sprintf_P(svalue, PSTR("Version %s, Boot %d, SDK %s"), VERSION, ESP.getBootVersion(), ESP.getSdkVersion());
+        sprintf_P(svalue, PSTR("FMWR: Version %s, Boot %d, SDK %s"), VERSION, ESP.getBootVersion(), ESP.getSdkVersion());
+      }
+      if ((data_len > 0) && (payload == 3)) {
+        sprintf_P(svalue, PSTR("MQTT: %s, MQTT-MAX-PACKET: %d, MQTT-KEEPALIVE: %d"), sysCfg.mqtt_host, MQTT_MAX_PACKET_SIZE, MQTT_KEEPALIVE); 
+      }
+      if ((data_len > 0) && (payload == 4)) {
+        sprintf_P(svalue, PSTR("OTA: %s"), sysCfg.otaUrl); 
       }
     }
     else if (!grpflg && !strcmp(type,"UPGRADE")) {
@@ -454,6 +464,8 @@ void setup()
 
   Serial.printf("Project %s (Topic %s, Fallback "MQTT_CLIENT_ID", GroupTopic %s) Version %s (Boot %d, SDK %s)\n",
     PROJECT, sysCfg.mqtt_topic, ESP.getChipId(), sysCfg.mqtt_grptopic, VERSION, ESP.getBootVersion(), ESP.getSdkVersion());
+
+  Serial.printf("\n\tMQTT-MAX-PACKET: %d\n\t MQTT-KEEPALIVE: %d\n\n", MQTT_MAX_PACKET_SIZE, MQTT_KEEPALIVE); 
 
   WIFI_Connect();
 
